@@ -9,6 +9,6 @@ To use it as a dependency add following to your `pyproject.toml` file
 
 ```toml
 dependencies = [
-    "sprats @ git+https://github.com/priimak/sprats.git@v0.1.0"
+    "sprats @ git+https://github.com/priimak/sprats.git@v0.1.1"
 ]
 ```

@@ -6,11 +6,18 @@ T = TypeVar("T", bound=Any)
 
 
 class AppConfig:
-    def __init__(self, config_root_dir: Path, init_data: dict[str, Any]):
+    def __init__(self, config_root_dir: Path, init_data: dict[str, Any], override_if_different_version: bool = False):
         self.app_name_config_dir = config_root_dir
         self.config_file = self.app_name_config_dir / "config.json"
 
         if not self.config_file.exists():
+            self.config_file.write_text(json.dumps(init_data, indent=2))
+
+        config_version_in_file = self.get_value("config_version", int)
+        config_version_in_init = init_data.get("config_version")
+        if (override_if_different_version and
+                config_version_in_init is not None and
+                config_version_in_file != config_version_in_init):
             self.config_file.write_text(json.dumps(init_data, indent=2))
 
     def set_value(self, name: str, value: Any) -> None:

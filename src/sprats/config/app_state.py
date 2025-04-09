@@ -10,12 +10,12 @@ class AppState:
 
     def save_geometry(self, name: str, geometry: "QByteArray") -> None:
         from PySide6.QtCore import QByteArray
-        self.__geometry_dir.mkdir(parents = True, exist_ok = True)
+        self.__geometry_dir.mkdir(parents=True, exist_ok=True)
         geo_file = self.app_name_config_dir / "geometry" / f"{name}.json"
         data = {
             "geometry": geometry.toBase64(QByteArray.Base64Option.Base64Encoding).data().decode("utf-8")
         }
-        geo_file.write_text(json.dumps(data, indent = 2))
+        geo_file.write_text(json.dumps(data, indent=2))
 
     def get_geometry(self, name: str) -> Optional["QByteArray"]:
         from PySide6.QtCore import QByteArray
@@ -38,7 +38,7 @@ class AppState:
         elif default_value is not None:
             # attempt to save default value
             data[name] = default_value
-            state_file.write_text(json.dumps(data, indent = 2))
+            state_file.write_text(json.dumps(data, indent=2))
 
         return default_value
 
@@ -51,9 +51,9 @@ class AppState:
                 data[name] = value
             else:
                 data[name] = f"{value}"
-            state_file.write_text(json.dumps(data, indent = 2))
+            state_file.write_text(json.dumps(data, indent=2))
         else:
             if isinstance(value, list) or isinstance(value, int) or isinstance(value, float) or isinstance(value, bool):
-                state_file.write_text(json.dumps({name: value}, indent = 2))
+                state_file.write_text(json.dumps({name: value}, indent=2))
             else:
-                state_file.write_text(json.dumps({name: f"{value}"}, indent = 2))
+                state_file.write_text(json.dumps({name: f"{value}"}, indent=2))

@@ -14,7 +14,7 @@ class Node[T: LinkedToNode]:
             value.link_to_node(self)
 
     def append_inserting(self, value: T) -> Self:
-        new_node = Node(value, prev_node = self, next_node = self.next)
+        new_node = Node(value, prev_node=self, next_node=self.next)
 
         if self.next is not None:
             self.next.prev = new_node
@@ -36,4 +36,4 @@ class Node[T: LinkedToNode]:
 
 class LinkedList[T]:
     def __init__(self):
-        self.marker_node = Node[T](value = None, prev_node = None, next_node = None)
+        self.marker_node = Node[T](value=None, prev_node=None, next_node=None)

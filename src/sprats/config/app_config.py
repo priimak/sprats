@@ -62,6 +62,8 @@ class AppConfig:
                 elif idx == len_names - 1:
                     if isinstance(value, clazz):
                         return value
+                    elif clazz is float and isinstance(value, int):
+                        return value * 1.0
                     else:
                         raise RuntimeError(f"Value for key [{xpath}] is not an instance of {clazz.__name__}.")
                 elif not isinstance(value, dict):

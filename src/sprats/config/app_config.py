@@ -27,7 +27,10 @@ class AppConfig:
             data[name] = value
         else:
             data[name] = f"{value}"
-        self.config_file.write_text(json.dumps(data, indent=2))
+
+        with self.config_file.open("w") as file:
+            json.dump(data, file, indent=2)
+            file.flush()
 
     def get_value(self, name: str, clazz: Type[T] = object) -> T | None:
         data = json.loads(self.config_file.read_text())
@@ -87,4 +90,7 @@ class AppConfig:
                 else:
                     return None
         data[names[-1]] = value
-        self.config_file.write_text(json.dumps(root_data, indent=2))
+
+        with self.config_file.open("w") as file:
+            json.dump(root_data, file, indent=2)
+            file.flush()

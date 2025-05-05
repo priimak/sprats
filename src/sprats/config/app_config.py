@@ -6,9 +6,14 @@ T = TypeVar("T", bound=Any)
 
 
 class AppConfig:
-    def __init__(self, config_root_dir: Path, init_data: dict[str, Any], override_if_different_version: bool = False):
+    def __init__(self,
+                 config_root_dir: Path,
+                 init_data: dict[str, Any],
+                 override_if_different_version: bool = False,
+                 use_cache: bool = True):
         self.app_name_config_dir = config_root_dir
         self.config_file = self.app_name_config_dir / "config.json"
+        self.use_cache = use_cache
 
         if not self.config_file.exists():
             self.config_file.write_text(json.dumps(init_data, indent=2))
@@ -20,8 +25,17 @@ class AppConfig:
                 config_version_in_file != config_version_in_init):
             self.config_file.write_text(json.dumps(init_data, indent=2))
 
+        self.cached_json = None
+
+    def get_json(self):
+        if self.use_cache and self.cached_json is not None:
+            return self.cached_json
+        else:
+            self.cached_json = json.loads(self.config_file.read_text())
+            return self.cached_json
+
     def set_value(self, name: str, value: Any) -> None:
-        data = json.loads(self.config_file.read_text())
+        data = self.get_json()
         if (isinstance(value, int) or isinstance(value, bool) or isinstance(value, float) or
                 isinstance(value, list) or isinstance(value, dict)):
             data[name] = value
@@ -32,8 +46,10 @@ class AppConfig:
             json.dump(data, file, indent=2)
             file.flush()
 
+        self.cached_json = data
+
     def get_value(self, name: str, clazz: Type[T] = object) -> T | None:
-        data = json.loads(self.config_file.read_text())
+        data = self.get_json()
         if name in data:
             value = data[name]
             if isinstance(value, clazz):
@@ -73,7 +89,7 @@ class AppConfig:
                     return None
 
     def set_by_xpath(self, xpath: str, value: Any, raise_error_on_faile: bool = False) -> None:
-        root_data = json.loads(self.config_file.read_text())
+        root_data = self.get_json()
         data = root_data
 
         names = [name for name in xpath.split("/") if name.strip() != ""]
@@ -94,3 +110,5 @@ class AppConfig:
         with self.config_file.open("w") as file:
             json.dump(root_data, file, indent=2)
             file.flush()
+
+        self.cached_json = root_data

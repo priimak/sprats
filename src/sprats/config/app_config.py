@@ -14,6 +14,7 @@ class AppConfig:
         self.app_name_config_dir = config_root_dir
         self.config_file = self.app_name_config_dir / "config.json"
         self.use_cache = use_cache
+        self.cached_json = None
 
         if not self.config_file.exists():
             self.config_file.write_text(json.dumps(init_data, indent=2))
@@ -24,8 +25,6 @@ class AppConfig:
                 config_version_in_init is not None and
                 config_version_in_file != config_version_in_init):
             self.config_file.write_text(json.dumps(init_data, indent=2))
-
-        self.cached_json = None
 
     def get_json(self):
         if self.use_cache and self.cached_json is not None:

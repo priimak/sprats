@@ -17,6 +17,8 @@ class Variable[T]:
         self.valid_values: list[T] | None = None if valid_values is None else valid_values.copy()
         self.__valid_values_set: set[T] | None = None if valid_values is None else set(valid_values)
         self.__on_value_change = on_value_change
+        if self.__valid_values_set is not None and self.__value not in self.__valid_values_set:
+            raise ValueError(f"{value} is not in a list of valid values")
 
     def __repr__(self):
         return f"{self.__value}: Variable[{self.__type}]"

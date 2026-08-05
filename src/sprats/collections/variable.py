@@ -35,7 +35,8 @@ class Variable[T]:
             raise ValueError(f"{value} is not in a list of valid values")
         elif self.__value != value:
             self.__value = value
-            self.__on_value_change(self.__value)
+            if self.__on_value_change is not None:
+                self.__on_value_change(self.__value)
 
     def set_value(self, value: T):
         self.value = value

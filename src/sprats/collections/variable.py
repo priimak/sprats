@@ -1,3 +1,4 @@
+from threading import Lock
 from typing import Callable, Self
 
 
@@ -21,6 +22,7 @@ class Variable[T]:
         self.__on_value_change = [] if on_value_change is None else [on_value_change]
         if self.__valid_values_set is not None and self.__value not in self.__valid_values_set:
             raise ValueError(f"{value} is not in a list of valid values")
+        self.__lock = Lock()
 
     def __repr__(self):
         return f"{self.__value}: Variable[{self.__type}]"
@@ -38,16 +40,24 @@ class Variable[T]:
         else:
             return [self.serializer(v) for v in self.valid_values]
 
+    def __assign_value(self, value: T) -> T | None:
+        with self.__lock:
+            if type(value) is not self.__type:
+                raise TypeError()
+            elif self.valid_values is not None and value not in self.__valid_values_set:
+                raise ValueError(f"{value} is not in a list of valid values")
+            elif self.__value != value:
+                self.__value = value
+                return self.__value
+            else:
+                return None
+
     @value.setter
     def value(self, value: T):
-        if type(value) is not self.__type:
-            raise TypeError()
-        elif self.valid_values is not None and value not in self.__valid_values_set:
-            raise ValueError(f"{value} is not in a list of valid values")
-        elif self.__value != value:
-            self.__value = value
+        assigned_value = self.__assign_value(value)
+        if assigned_value is not None:
             for callback in self.__on_value_change:
-                callback(self.__value)
+                callback(assigned_value)
 
     def str_value(self) -> str:
         return self.serializer(self.value)

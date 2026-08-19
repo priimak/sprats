@@ -1,4 +1,5 @@
-from typing import Protocol, Self, Callable
+from collections.abc import Callable
+from typing import Protocol, Self
 
 
 class LinkedToNode(Protocol):

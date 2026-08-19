@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from enum import Enum
 from threading import Lock
 
 
@@ -79,7 +80,14 @@ class Variable[T]:
             match self.__value:
                 case str():
                     self.value = txt
-                case int():
-                    self.value = int(txt)
+                case Enum():
+                    if self.valid_values is None:
+                        raise ValueError(f"Please install custom deserialier for [{txt}] for Variable[{self.type.__name__}]")
+                    else:
+                        vals = [v for v in self.valid_values if str(v) == txt]
+                        if vals != []:
+                            self.value = vals[0]
+                        else:
+                            raise ValueError(f"Value [{txt}] is not in a list of valid values")
                 case _:
-                    raise TypeError(f"Unable to deserialize text into type {self.__type}")
+                    self.value = self.__type(txt)

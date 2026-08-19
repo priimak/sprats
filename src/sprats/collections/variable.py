@@ -42,6 +42,10 @@ class Variable[T]:
     def name(self):
         return self.__name
 
+    @property
+    def type(self):
+        return self.__type
+
     def valid_values_str(self) -> list[str] | None:
         if self.valid_values is None:
             return None

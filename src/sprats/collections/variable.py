@@ -74,10 +74,10 @@ class Variable[T]:
     def str_value(self) -> str:
         return self.serializer(self.value)
 
-    def set_value(self, value: T):
+    def set_value(self, value: T) -> None:
         self.value = value
 
-    def set_from_str(self, txt: str):
+    def set_from_str(self, txt: str) -> None:
         if self.deserializer is not None:
             self.value = self.deserializer(txt)
         else:

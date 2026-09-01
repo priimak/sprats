@@ -93,5 +93,7 @@ class Variable[T]:
                             self.value = vals[0]
                         else:
                             raise ValueError(f"Value [{txt}] is not in a list of valid values")
+                case bool():
+                    self.value = txt.strip().lower() == "true"
                 case _:
                     self.value = self.__type(txt)

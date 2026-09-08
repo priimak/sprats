@@ -12,16 +12,22 @@ class Variable[T]:
         serializer: Callable[[T], str] = lambda v: f"{v}",
         deserializer: Callable[[str], T] | None = None,
         valid_values: list[T] | None = None,
-        on_value_change: Callable[[T], None] | None = None,
+        on_value_change: Callable[[T | None], None] | None = None,
         name: str | None = None,
         clazz: type[object] | None = None,
+        nullable: bool = True,
     ):
-        self.__value = value
+        self.__value: T | None = value
         self.__type = value.__class__ if clazz is None else clazz
-        if clazz is not None and not isinstance(value, clazz):
+
+        if value is None:
+            if not nullable:
+                raise ValueError("Value cannot be None")
+        elif clazz is not None and not isinstance(value, clazz):
             raise TypeError(f"Value [{value}] is not an instance of {clazz}")
 
         self.__name = name
+        self.__nullable = nullable
         self.serializer = serializer
         self.deserializer = deserializer
         self.valid_values: list[T] | None = None if valid_values is None else valid_values.copy()
@@ -56,29 +62,32 @@ class Variable[T]:
         else:
             return [self.serializer(v) for v in self.valid_values]
 
-    def __assign_value(self, value: T) -> T | None:
+    def __assign_value(self, value: T | None) -> tuple[T | None, bool]:
+        if value is None and not self.__nullable:
+            raise ValueError("Value cannot be None")
+
         with self.__lock:
-            if not isinstance(value, self.__type):
+            if not isinstance(value, self.__type) and (not self.__nullable or value is not None):
                 raise TypeError()
             elif self.valid_values is not None and value not in self.__valid_values_set:
                 raise ValueError(f"{value} is not in a list of valid values")
             elif self.__value != value:
                 self.__value = value
-                return self.__value
+                return self.__value, True
             else:
-                return None
+                return None, False
 
     @value.setter
-    def value(self, value: T):
-        assigned_value = self.__assign_value(value)
-        if assigned_value is not None:
+    def value(self, value: T | None):
+        assigned_value, is_changed = self.__assign_value(value)
+        if is_changed:
             for callback in self.__on_value_change:
                 callback(assigned_value)
 
     def str_value(self) -> str:
         return self.serializer(self.value)
 
-    def set_value(self, value: T) -> None:
+    def set_value(self, value: T | None) -> None:
         self.value = value
 
     def set_from_str(self, txt: str) -> None:
@@ -90,7 +99,9 @@ class Variable[T]:
                     self.value = txt
                 case Enum():
                     if self.valid_values is None:
-                        raise ValueError(f"Please install custom deserialier for [{txt}] for Variable[{self.type.__name__}]")
+                        raise ValueError(
+                            f"Please install custom deserialier for [{txt}] for Variable[{self.type.__name__}]"
+                        )
                     else:
                         vals = [v for v in self.valid_values if str(v) == txt]
                         if vals != []:

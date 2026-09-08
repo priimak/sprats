@@ -19,6 +19,9 @@ def test_variable():
     v.set_from_str("2")
     assert v.value == 2
 
+    v.value = None
+    assert v.value == None
+
     with pytest.raises(TypeError):
         v.set_value(1.0)
 
@@ -30,9 +33,12 @@ def test_variable():
     with pytest.raises(TypeError):
         ab.set_value(A())
 
-    ab = Variable[A](B(), name="ab", clazz=A)
+    ab = Variable[A](B(), name="ab", clazz=A, nullable=False)
     assert ab.type == A
     ab.value = A()
+
+    with pytest.raises(ValueError):
+        ab.value = None
 
     with pytest.raises(TypeError):
         ab.set_from_str("B")
@@ -51,3 +57,7 @@ def test_variable():
     ab.set_from_str("A")
     assert ab.type == A
     assert ab.value == A()
+    ab.value = None
+
+    with pytest.raises(TypeError):
+        ab.value = 7

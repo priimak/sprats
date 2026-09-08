@@ -14,9 +14,13 @@ class Variable[T]:
         valid_values: list[T] | None = None,
         on_value_change: Callable[[T], None] | None = None,
         name: str | None = None,
+        clazz: type[object] | None = None,
     ):
         self.__value = value
-        self.__type = type(value)
+        self.__type = value.__class__ if clazz is None else clazz
+        if clazz is not None and not isinstance(value, clazz):
+            raise TypeError(f"Value [{value}] is not an instance of {clazz}")
+
         self.__name = name
         self.serializer = serializer
         self.deserializer = deserializer
@@ -54,7 +58,7 @@ class Variable[T]:
 
     def __assign_value(self, value: T) -> T | None:
         with self.__lock:
-            if type(value) is not self.__type:
+            if not isinstance(value, self.__type):
                 raise TypeError()
             elif self.valid_values is not None and value not in self.__valid_values_set:
                 raise ValueError(f"{value} is not in a list of valid values")

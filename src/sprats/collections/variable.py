@@ -8,7 +8,7 @@ class Variable[T]:
 
     def __init__(
         self,
-        value: T,
+        value: T | None,
         serializer: Callable[[T], str] = lambda v: f"{v}",
         deserializer: Callable[[str], T] | None = None,
         valid_values: list[T] | None = None,

@@ -1,16 +1,18 @@
 import json
 from pathlib import Path
-from typing import Any, Type, TypeVar
+from typing import Any, TypeVar
 
 T = TypeVar("T", bound=Any)
 
 
 class AppConfig:
-    def __init__(self,
-                 config_root_dir: Path,
-                 init_data: dict[str, Any],
-                 override_if_different_version: bool = False,
-                 use_cache: bool = True):
+    def __init__(
+        self,
+        config_root_dir: Path,
+        init_data: dict[str, Any],
+        override_if_different_version: bool = False,
+        use_cache: bool = True,
+    ):
         self.app_name_config_dir = config_root_dir
         self.config_file = self.app_name_config_dir / "config.json"
         self.use_cache = use_cache
@@ -21,10 +23,13 @@ class AppConfig:
 
         config_version_in_file = self.get_value("config_version", int)
         config_version_in_init = init_data.get("config_version")
-        if (override_if_different_version and
-                config_version_in_init is not None and
-                config_version_in_file != config_version_in_init):
+        if (
+            override_if_different_version
+            and config_version_in_init is not None
+            and config_version_in_file != config_version_in_init
+        ):
             self.config_file.write_text(json.dumps(init_data, indent=2))
+            self.cached_json = None
 
     def get_json(self):
         if self.use_cache and self.cached_json is not None:
@@ -35,8 +40,13 @@ class AppConfig:
 
     def set_value(self, name: str, value: Any) -> None:
         data = self.get_json()
-        if (isinstance(value, int) or isinstance(value, bool) or isinstance(value, float) or
-                isinstance(value, list) or isinstance(value, dict)):
+        if (
+            isinstance(value, int)
+            or isinstance(value, bool)
+            or isinstance(value, float)
+            or isinstance(value, list)
+            or isinstance(value, dict)
+        ):
             data[name] = value
         else:
             data[name] = f"{value}"
@@ -47,7 +57,7 @@ class AppConfig:
 
         self.cached_json = data
 
-    def get_value(self, name: str, clazz: Type[T] = object) -> T | None:
+    def get_value(self, name: str, clazz: type[T] = object) -> T | None:
         data = self.get_json()
         if name in data:
             value = data[name]
@@ -58,7 +68,7 @@ class AppConfig:
         else:
             return None
 
-    def get_by_xpath[T](self, xpath: str, clazz: Type[T] = object) -> T | None:
+    def get_by_xpath[T](self, xpath: str, clazz: type[T] = object) -> T | None:
         names = [name for name in xpath.split("/") if name.strip() != ""]
         root_name = names[0]
         root_value = self.get_value(root_name)
@@ -87,7 +97,7 @@ class AppConfig:
                 elif not isinstance(value, dict):
                     return None
 
-    def set_by_xpath(self, xpath: str, value: Any, raise_error_on_faile: bool = False) -> None:
+    def set_by_xpath(self, xpath: str, value: Any, raise_error_on_failure: bool = False) -> None:
         root_data = self.get_json()
         data = root_data
 
@@ -95,15 +105,15 @@ class AppConfig:
         for name in names[:-1]:
             data = data.get(name)
             if data is None:
-                if raise_error_on_faile:
+                if raise_error_on_failure:
                     raise RuntimeError(f"Xpath {xpath} not found in the data set")
                 else:
-                    return None
+                    return
             elif not isinstance(data, dict):
-                if raise_error_on_faile:
+                if raise_error_on_failure:
                     raise RuntimeError(f"Object associated with {xpath} is not a dict")
                 else:
-                    return None
+                    return
         data[names[-1]] = value
 
         with self.config_file.open("w") as file:

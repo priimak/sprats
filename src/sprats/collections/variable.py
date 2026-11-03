@@ -111,4 +111,11 @@ class Variable[T]:
                 case bool():
                     self.value = txt.strip().lower() == "true"
                 case _:
+                    if self.valid_values is not None:
+                        # if valid_values are given then attempt to find value that is to be set in the list of
+                        # these valid values and use it.
+                        for v in self.valid_values:
+                            if txt == str(v):
+                                self.value = v
+                                return
                     self.value = self.__type(txt)

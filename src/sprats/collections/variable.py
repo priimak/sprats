@@ -42,25 +42,34 @@ class Variable[T]:
         return self.__repr_prefix + (f'"{self.value}"' if isinstance(self.value, str) else f"{self.value}")
 
     def register_value_change_callback(self, callback: Callable[[T], None]):
+        """
+        Adds callback function to be called when value changes. Note, that simply assigning value to this variable is
+        not enough to trigger calls to callbacks. In order for callbacks to be called, the new value has to be different
+        from the one presently stored inside the variable. When called, callbacks will receive new value as an argument.
+        """
         self.__on_value_change.append(callback)
 
     @property
-    def value(self):
+    def value(self) -> T | None:
+        """Value held by this variable."""
         return self.__value
 
     @property
-    def name(self):
+    def name(self) -> str | None:
+        """Optional name of this variable."""
         return self.__name
 
     @property
-    def type(self):
+    def type(self) -> type[T] | type[None] | type[object]:
+        """Type of the value held by this variable."""
         return self.__type
 
     def valid_values_str(self) -> list[str] | None:
-        if self.valid_values is None:
-            return None
-        else:
-            return [self.serializer(v) for v in self.valid_values]
+        """
+        List of valid values represented as strings using provided (or default) serializer. If valid values are not
+        provided, then None is returned.
+        """
+        return None if self.valid_values is None else [self.serializer(v) for v in self.valid_values]
 
     def __assign_value(self, value: T | None) -> tuple[T | None, bool]:
         if value is None and not self.__nullable:
@@ -85,12 +94,15 @@ class Variable[T]:
                 callback(assigned_value)
 
     def str_value(self) -> str:
+        """Value held by this variable as a string converted using provided (or default) serializer."""
         return self.serializer(self.value)
 
     def set_value(self, value: T | None) -> None:
+        """Assign new value to this variable."""
         self.value = value
 
     def set_from_str(self, txt: str) -> None:
+        """Assign new value to this variable using provided (or default) serializer."""
         if self.deserializer is not None:
             self.value = self.deserializer(txt)
         else:

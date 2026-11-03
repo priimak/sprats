@@ -27,3 +27,8 @@ dev = [
     "pytest-cov>=7.1.0",
     "ruff",
 ]
+
+[tool.pytest]
+minversion = "9.0"
+addopts = ["--cov=src", "--cov-report=json", "-ra", "-q", "--strict-markers"]
+testpaths = ["tests"]
